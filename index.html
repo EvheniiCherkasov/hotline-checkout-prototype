@@ -301,21 +301,7 @@
     margin-top: 8px;
   }
 
-  /* date row */
-  .date-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 13px 14px;
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    margin-bottom: 12px;
-    cursor: pointer;
-  }
-  .date-row .d-lbl { font-size: 12px; color: var(--muted); }
-  .date-row .d-val { font-size: 14px; font-weight: 700; margin-top: 2px; }
-  .date-row .d-chev { margin-left: auto; color: var(--muted); font-size: 18px; }
-
-  /* warning box (конфлікт дат) */
+  /* warning box */
   .warn-box {
     background: var(--warn-bg);
     border-radius: 12px;
@@ -554,18 +540,6 @@
       </div>
 
       
-      <div class="date-row" onclick="openDatePicker()">
-        <div>
-          <div class="d-lbl">Початок дії поліса</div>
-          <div class="d-val" id="date-start">22.07.2026</div>
-        </div>
-        <div class="d-chev">›</div>
-      </div>
-      <div class="warn-box" id="date-warn" style="display:none;">
-        <strong>На це авто вже є чинний поліс до 21.07.2026.</strong> Новий поліс зможе почати діяти з 22.07.2026 — інакше буде подвійне покриття. Дату можна лишити — ми не блокуємо, лише попереджаємо.
-      </div>
-
-      
       <h2 class="section-title">Дані страхувальника (покупця)</h2>
       <div class="ua-note"><span class="flag"></span> Поля заповнюються українською <span class="q">?</span></div>
 
@@ -694,7 +668,6 @@
     <h3>Стани</h3>
     <button onclick="statePrefilled()">✅ prefilled — реєстр відповів (default)</button>
     <button onclick="stateEdge()">⚠️ edge-2026 — реєстр порожній</button>
-    <button onclick="stateConflict()">📅 conflict — чинний поліс до 21.07</button>
     <button onclick="stateErrors()">❌ field-error — показати inline-помилки</button>
   </div>
 
@@ -710,8 +683,6 @@
 <script>
 const ORDER = ['co1','co2','end'];
 let current = 'co1';
-let conflictMode = false;
-const EXISTING_POLICY_END = 21; // чинний поліс до 21.07.2026 (demo)
 
 /* ---------- навігація ---------- */
 function go(id) {
@@ -831,12 +802,6 @@ function stateEdge() {
   toast('Стан: edge-2026 — реєстр порожній, ручний ввід');
 }
 
-function stateConflict() {
-  go('co1');
-  conflictMode = true;
-  setDateStart(17);
-  toast('Стан: конфлікт дат — показуємо warning, не блокуємо');
-}
 
 function stateErrors() {
   go('co1');
@@ -849,41 +814,6 @@ function stateErrors() {
   const firstErr = document.querySelector('#co1 .field.err');
   if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
   toast('Стан: inline-помилки під полями');
-}
-
-/* ---------- дата + конфлікт ---------- */
-let startDay = 22;
-
-function setDateStart(d) {
-  startDay = d;
-  const dd = String(d).padStart(2, '0');
-  document.getElementById('date-start').textContent = `${dd}.07.2026`;
-  const warn = document.getElementById('date-warn');
-  warn.style.display = (conflictMode && d <= EXISTING_POLICY_END) ? '' : 'none';
-}
-
-function openDatePicker() {
-  const days = [...Array(31)].map((_, i) => {
-    const d = i + 1;
-    const active = d === startDay;
-    const conflicted = conflictMode && d <= EXISTING_POLICY_END;
-    return `<button onclick="pickDate(${d})" style="padding:10px 0; border-radius:8px; border:none;
-      background:${active ? '#1a1a1a' : (conflicted ? '#FBE2D0' : '#fff')};
-      color:${active ? '#fff' : '#1a1a1a'}; font-weight:700; cursor:pointer;">${d}</button>`;
-  }).join('');
-  showOverlay(`
-    <h3>Коли поліс починає діяти</h3>
-    <p>Липень 2026${conflictMode ? ' · помаранчеві дні перетинаються з чинним полісом' : ''}</p>
-    <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:14px; font-size:13px; text-align:center;">
-      <div class="muted">ПН</div><div class="muted">ВТ</div><div class="muted">СР</div><div class="muted">ЧТ</div><div class="muted">ПТ</div><div class="muted">СБ</div><div class="muted">НД</div>
-      ${days}
-    </div>
-    <button class="cta" onclick="hideOverlay()">Застосувати</button>
-  `);
-}
-function pickDate(d) {
-  setDateStart(d);
-  openDatePicker(); /* перемалювати активний день */
 }
 
 
@@ -1020,8 +950,6 @@ function reset() {
     f.classList.remove('filled','auto','err','need','ok');
     const m = f.querySelector('.err-msg'); if (m) m.textContent = '';
   });
-  conflictMode = false;
-  setDateStart(22);
   document.getElementById('reg-note').style.display = 'none';
   document.getElementById('ipn-tip').style.display = 'none';
   const priv = document.getElementById('v-private'); if (priv) priv.checked = true;
