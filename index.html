@@ -1,0 +1,1055 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hotline ОСЦПВ — Checkout прототип (Design 2.0)</title>
+<style>
+  :root {
+    --cream: #F8F4EF;
+    --cream-dark: #F0E9E0;
+    --border: #E5DED3;
+    --text: #1A1A1A;
+    --muted: #6B6B6B;
+    --orange: #F7921E;
+    --orange-dark: #E07D10;
+    --accent: #F37025;
+    --warn-bg: #FBE2D0;
+    --success: #2F9D57;
+    --success-bg: #DCF2E2;
+    --error: #E23D3D;
+    --reg-blue: #1D60C2;
+    --skoda-green: #4BA82E;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Helvetica Neue", Arial, sans-serif;
+    background: #2A2825;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 32px 16px;
+    gap: 24px;
+  }
+  /* device frame */
+  .device {
+    width: 390px;
+    height: 844px;
+    background: var(--cream);
+    border-radius: 44px;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.4), 0 0 0 12px #1a1a1a, 0 0 0 14px #3a3835;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .notch {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110px;
+    height: 28px;
+    background: #1a1a1a;
+    border-radius: 20px;
+    z-index: 100;
+  }
+  .screen {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    padding-top: 44px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .screen.active { display: flex; }
+
+  
+  .topbar {
+    display: flex;
+    align-items: center;
+    padding: 6px 16px 12px;
+    gap: 10px;
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+  }
+  .topbar .back {
+    width: 28px; height: 28px;
+    border: none; background: transparent;
+    font-size: 22px; cursor: pointer; color: var(--text);
+  }
+  .topbar .title { flex: 1; font-weight: 700; font-size: 15px; line-height: 1.1; }
+  .topbar .title .sub {
+    display: block; font-weight: 500; font-size: 12px;
+    color: var(--accent); margin-top: 2px;
+  }
+  .topbar .help {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--cream-dark);
+    display: grid; place-items: center;
+    font-size: 13px; color: var(--muted); cursor: pointer;
+    flex-shrink: 0;
+  }
+  .topbar .auth-btn {
+    background: #2B2B33;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  
+  .progress { display: flex; gap: 8px; padding: 12px 20px 16px; }
+  .progress .dot { flex: 1; height: 5px; border-radius: 3px; background: #fff; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04); }
+  .progress .dot.done, .progress .dot.active { background: #1a1a1a; }
+
+  .body { padding: 0 20px 24px; flex: 1; }
+
+  h1.screen-title {
+    font-size: 22px; font-weight: 800; line-height: 1.2;
+    margin: 4px 0 14px;
+    text-align: center;
+  }
+  h2.section-title {
+    font-size: 20px; font-weight: 800; line-height: 1.2;
+    margin: 26px 0 12px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+  .subtitle { font-size: 14px; color: var(--muted); margin-bottom: 14px; }
+
+  
+  .ua-note {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text);
+    margin: 0 0 14px;
+  }
+  .ua-note .flag {
+    width: 22px; height: 15px;
+    border-radius: 3px;
+    background: linear-gradient(#0057B7 50%, #FFD700 50%);
+    flex-shrink: 0;
+  }
+  .ua-note .q {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1px solid var(--border);
+    display: grid; place-items: center;
+    font-size: 11px; color: var(--muted);
+  }
+
+  /* form */
+  .field { position: relative; margin-bottom: 12px; }
+  .field label {
+    position: absolute; top: 10px; left: 14px;
+    font-size: 12px; color: var(--muted);
+    pointer-events: none; transition: all 0.15s;
+  }
+  .field input, .field textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 26px 14px 10px;
+    font-size: 16px;
+    font-family: inherit;
+    background: #fff;
+    color: var(--text);
+    outline: none;
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--orange); }
+  .field.filled label { top: 7px; font-size: 11px; }
+  .field-row { display: flex; gap: 10px; }
+  .field-row .field { flex: 1; }
+
+  
+  .field.err input, .field.err textarea { border-color: var(--error); }
+  .field.ok input, .field.ok textarea { border-color: var(--success); }
+  .err-msg {
+    display: none;
+    color: var(--error);
+    font-size: 12px;
+    padding: 4px 2px 0;
+  }
+  .field.err .err-msg { display: block; }
+
+  /* edge-2026: поле порожнє, бо реєстр не відповів — м'яка підсвітка */
+  .field.need input { border-color: var(--orange); background: #FFF9F2; }
+
+  .field .help-ico {
+    position: absolute; right: 10px; top: 50%;
+    transform: translateY(-50%);
+    width: 22px; height: 22px;
+    border-radius: 50%; background: var(--cream-dark);
+    display: grid; place-items: center;
+    font-size: 12px; color: var(--muted);
+    cursor: pointer;
+  }
+  
+  .field .dd-chev {
+    position: absolute; right: 14px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 15px;
+    pointer-events: none;
+  }
+
+  /* поля, що прийшли з реєстру */
+  .field.auto input, .field.auto textarea { background: #F5FAFF; border-color: #BFD8F5; }
+  .field.auto::after {
+    content: "⚡ реєстр";
+    position: absolute;
+    right: 10px; top: 8px;
+    font-size: 9px; font-weight: 700;
+    color: var(--reg-blue);
+    background: #EEF4FC;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+  }
+  .field.auto.has-ico::after { right: 40px; }
+
+  
+  .group-lbl {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: .08em; color: var(--muted);
+    text-transform: uppercase;
+    margin: 18px 0 8px;
+  }
+
+  /* plate */
+  .plate {
+    background: #fff;
+    border: 2px solid #1a1a1a;
+    border-radius: 10px;
+    padding: 6px 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    font-size: 24px;
+    letter-spacing: 1px;
+    font-family: "SF Mono", monospace;
+  }
+  .plate .ua {
+    width: 20px; height: 26px;
+    background: linear-gradient(#0057B7 50%, #FFD700 50%);
+    border-radius: 2px;
+    display: grid; place-items: end center;
+    font-size: 8px; font-weight: 700; color: white;
+    padding-bottom: 2px; letter-spacing: 0;
+  }
+  .plate input {
+    border: none; outline: none;
+    width: 140px; font: inherit;
+    text-transform: uppercase; padding: 0;
+  }
+  .plate-wrap {
+    display: flex; justify-content: center; align-items: center;
+    gap: 14px;
+    margin: 8px 0 18px;
+  }
+  .brand-logo {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: #fff;
+    border: 1px solid var(--border);
+    display: grid; place-items: center;
+    font-weight: 800; color: var(--skoda-green);
+    font-size: 10px;
+  }
+
+  
+  .v-summary {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .v-summary .row-top { display: flex; align-items: center; gap: 12px; }
+  .v-summary .v-title { font-weight: 800; font-size: 15px; }
+  .v-summary .v-sub { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+  .v-summary .v-edit {
+    background: var(--cream-dark);
+    border: none;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 12px; font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .v-summary .v-edit:active { background: var(--border); }
+  .v-summary .reg-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #EEF4FC; color: var(--reg-blue);
+    border-radius: 8px;
+    padding: 3px 8px;
+    font-size: 10px; font-weight: 700;
+    margin-top: 8px;
+  }
+
+  /* date row */
+  .date-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 13px 14px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+  .date-row .d-lbl { font-size: 12px; color: var(--muted); }
+  .date-row .d-val { font-size: 14px; font-weight: 700; margin-top: 2px; }
+  .date-row .d-chev { margin-left: auto; color: var(--muted); font-size: 18px; }
+
+  /* warning box (конфлікт дат) */
+  .warn-box {
+    background: var(--warn-bg);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .warn-box strong { font-weight: 700; }
+
+  .note { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.45; }
+
+  /* CTA */
+  .cta-wrap {
+    padding: 16px 20px 28px;
+    background: linear-gradient(transparent, var(--cream) 30%);
+    position: sticky;
+    bottom: 0;
+  }
+  .cta {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 14px;
+    background: var(--orange);
+    color: #fff;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .cta:hover { background: var(--orange-dark); }
+  .cta-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+  
+  .tabs {
+    display: flex;
+    background: #fff;
+    border-radius: 14px;
+    padding: 4px;
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+  }
+  .tabs button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--text);
+  }
+  .tabs button.active { background: #26418F; color: #fff; }
+
+  /* checkbox */
+  .cbx {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: 12px; line-height: 1.5; color: var(--text);
+    margin-bottom: 14px;
+  }
+  .cbx input { margin-top: 2px; }
+
+  
+  .ipn-tip {
+    display: none;
+    background: #EEF4FC;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    color: #2C4A72;
+    margin: -4px 0 10px;
+    line-height: 1.5;
+  }
+
+  /* hypothesis dev-hints */
+
+
+
+  .stack-8 > * + * { margin-top: 8px; }
+  .muted { color: var(--muted); }
+  .row-between { display: flex; justify-content: space-between; align-items: center; }
+
+  /* success stub */
+  .success-check {
+    width: 96px; height: 96px;
+    border-radius: 50%;
+    background: var(--success-bg);
+    display: grid; place-items: center;
+    margin: 40px auto 16px;
+    font-size: 48px;
+    color: var(--success);
+  }
+
+  /* overlay + sheet (date-picker) */
+  .overlay {
+    position: absolute; inset: 0;
+    background: rgba(10,10,10,0.55);
+    display: none;
+    align-items: flex-end;
+    z-index: 200;
+    border-radius: 44px;
+  }
+  .overlay.active { display: flex; }
+  .sheet {
+    background: #fff;
+    width: 100%;
+    border-radius: 24px 24px 0 0;
+    padding: 24px 20px 32px;
+    animation: slideUp 0.25s ease-out;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .sheet .handle {
+    width: 48px; height: 5px; border-radius: 3px;
+    background: var(--border);
+    margin: 0 auto 16px;
+  }
+  .sheet h3 { margin: 0 0 6px; font-size: 18px; font-weight: 700; }
+  .sheet p { margin: 0 0 18px; color: var(--muted); font-size: 14px; }
+
+  /* side panel */
+  .panel {
+    width: 320px;
+    background: #1f1d1b;
+    border-radius: 16px;
+    padding: 20px;
+    color: #ddd;
+    font-size: 13px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    position: sticky;
+    top: 32px;
+  }
+  .panel h2 { margin: 0 0 8px; font-size: 15px; color: #fff; font-weight: 700; }
+  .panel .sub { color: #888; margin-bottom: 16px; font-size: 12px; }
+  .panel .group { margin-bottom: 18px; }
+  .panel .group h3 {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;
+    margin: 0 0 8px; color: #888; font-weight: 700;
+  }
+  .panel button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #2a2826;
+    border: 1px solid #3a3835;
+    color: #ddd;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    margin-bottom: 6px;
+  }
+  .panel button:hover { background: #35322f; }
+  .panel button.current { background: var(--orange); color: #fff; border-color: var(--orange); }
+  .panel .kb { font-size: 10px; color: #666; margin-top: 12px; line-height: 1.6; }
+  .panel .dev-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; color: #bbb; }
+  .panel .dev-toggle input { transform: scale(1.1); }
+
+  @media (max-width: 820px) {
+    body { flex-direction: column; align-items: center; }
+    .panel { position: static; width: 390px; }
+  }
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="notch"></div>
+
+  
+  <section class="screen active" id="co1">
+    <div class="topbar">
+      <button class="back" onclick="toast('Назад до умов і ціни — поза скоупом прототипу')">‹</button>
+      <div class="title">Оформлення поліса<span class="sub">Умови та ціна поліса</span></div>
+      <div class="help">?</div>
+      <button class="auth-btn" onclick="toast('Авторизація — поза скоупом прототипу')">Авторизація</button>
+    </div>
+    <div class="progress">
+      <div class="dot done"></div>
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="body">
+      <h1 class="screen-title">Дані про транспортний засіб</h1>
+
+      <!-- згорнута summary-card: дані з реєстру -->
+      <div class="v-summary" id="v-summary">
+        <div class="row-top">
+          <div class="brand-logo" id="brand-logo-s">Š</div>
+          <div style="flex:1; min-width:0;">
+            <div class="v-title" id="v-sum-title">Skoda Rapid · 2013</div>
+            <div class="v-sub" id="v-sum-sub">AA1234CE · VIN ···4321 · не для платних перевезень</div>
+          </div>
+          <button class="v-edit" onclick="expandVehicle()">Змінити</button>
+        </div>
+        <div class="reg-badge">⚡ 8 полів з реєстру — перевірте й редагуйте за потреби</div>
+      </div>
+
+      <!-- нотатка, коли реєстр не відповів (edge-2026) -->
+      <div class="warn-box" id="reg-note" style="display:none;">
+        <strong>Реєстр не відповів.</strong> Заповніть дані авто вручну — підсвітили, чого не вистачає.
+      </div>
+
+      
+      <div id="vehicle-block" style="display:none;">
+        <div class="plate-wrap">
+          <div class="plate">
+            <div class="ua">UA</div>
+            <input id="plate" value="AA1234CE" maxlength="9" />
+          </div>
+          <div class="brand-logo" id="brand-logo">Š</div>
+        </div>
+        <div id="vehicle-fields" class="stack-8">
+          <div class="field"><label>Виробник</label><input id="v-brand" /><span class="dd-chev">⌄</span><div class="err-msg"></div></div>
+          <div class="field"><label>Модель</label><input id="v-model" /><span class="dd-chev">⌄</span><div class="err-msg"></div></div>
+          <div class="field"><label>Рік випуску</label><input id="v-year" inputmode="numeric" /><span class="dd-chev">⌄</span><div class="err-msg"></div></div>
+          <div class="field has-ico"><label>Об'єм двигуна (см³)</label><input id="v-cc" inputmode="numeric" /><span class="help-ico">?</span><div class="err-msg"></div></div>
+          <div class="field has-ico"><label>Номер кузова (VIN)</label><input id="v-vin" /><span class="help-ico">?</span><div class="err-msg"></div></div>
+          <div class="field has-ico"><label>Кількість сидячих місць</label><input id="v-seats" inputmode="numeric" /><span class="help-ico">?</span><div class="err-msg"></div></div>
+          <div class="field-row">
+            <div class="field"><label>Повна маса</label><input id="v-mass-full" inputmode="numeric" /><div class="err-msg"></div></div>
+            <div class="field"><label>Маса без навантаження</label><input id="v-mass-empty" inputmode="numeric" /><div class="err-msg"></div></div>
+          </div>
+          <label class="cbx" style="margin-top:6px">
+            <input type="checkbox" id="v-private" checked />
+            <span>Не використовується для платних перевезень пасажирів чи вантажів</span>
+          </label>
+        </div>
+      </div>
+
+      
+      <div class="date-row" onclick="openDatePicker()">
+        <div>
+          <div class="d-lbl">Початок дії поліса</div>
+          <div class="d-val" id="date-start">22.07.2026</div>
+        </div>
+        <div class="d-chev">›</div>
+      </div>
+      <div class="warn-box" id="date-warn" style="display:none;">
+        <strong>На це авто вже є чинний поліс до 21.07.2026.</strong> Новий поліс зможе почати діяти з 22.07.2026 — інакше буде подвійне покриття. Дату можна лишити — ми не блокуємо, лише попереджаємо.
+      </div>
+
+      
+      <h2 class="section-title">Дані страхувальника (покупця)</h2>
+      <div class="ua-note"><span class="flag"></span> Поля заповнюються українською <span class="q">?</span></div>
+
+      
+
+      <div class="group-lbl">Особисті дані</div>
+      <div class="stack-8">
+        <div class="field"><label>ПІБ</label><input id="c-name" autocomplete="name" /><div class="err-msg"></div></div>
+        <div class="field"><label>Дата народження</label><input id="c-dob" placeholder="ДД.ММ.РРРР" inputmode="numeric" autocomplete="bday" /><div class="err-msg"></div></div>
+        <div class="field has-ico"><label>ІПН</label><input id="c-ipn" inputmode="numeric" maxlength="10" /><span class="help-ico" onclick="toggleIpnTip()">?</span><div class="err-msg"></div></div>
+      </div>
+      <div class="ipn-tip" id="ipn-tip">
+        Без ІПН поліс не потрапить у реєстр МТСБУ — і не буде дійсним. Це обов'язкова вимога, дані захищені.
+      </div>
+
+      <div class="group-lbl">Контакти</div>
+      <div class="stack-8">
+        <div class="field"><label>E-Mail</label><input id="c-email" type="email" inputmode="email" autocomplete="email" /><div class="err-msg"></div></div>
+        <div class="field"><label>Телефон</label><input id="c-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+380 __ ___ ____" /><div class="err-msg"></div></div>
+      </div>
+      <div class="note">Поліс прийде на email, код підтвердження — SMS.</div>
+
+      <div class="group-lbl">Адреса прописки</div>
+      <div class="stack-8">
+        <div class="field"><label>Місто (прописка)</label><input id="c-city" placeholder="Почніть вводити..." /><span class="dd-chev">⌄</span><div class="err-msg"></div></div>
+        <div class="field"><label>Вулиця</label><input id="c-street" autocomplete="address-line1" /><div class="err-msg"></div></div>
+        <div class="field-row">
+          <div class="field"><label>Будинок</label><input id="c-house" /><div class="err-msg"></div></div>
+          <div class="field"><label>Квартира</label><input id="c-apt" placeholder="—" /><div class="err-msg"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="cta-wrap">
+      <button class="cta" onclick="submitCO1()">Продовжити</button>
+    </div>
+  </section>
+
+  <!-- ============ CO2 — ДОКУМЕНТ ============ -->
+  <section class="screen" id="co2">
+    <div class="topbar">
+      <button class="back" onclick="prev()">‹</button>
+      <div class="title">Оформлення поліса<span class="sub">Умови та ціна поліса</span></div>
+      <div class="help">?</div>
+      <button class="auth-btn" onclick="toast('Авторизація — поза скоупом прототипу')">Авторизація</button>
+    </div>
+    <div class="progress">
+      <div class="dot done"></div>
+      <div class="dot done"></div>
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="body">
+      <h1 class="screen-title">Заповніть один із документів</h1>
+      <div class="ua-note"><span class="flag"></span> Поля заповнюються українською <span class="q">?</span></div>
+
+      <div class="tabs">
+        <button id="tab-dl" onclick="setDocTab('dl')">Права</button>
+        <button id="tab-pass" class="active" onclick="setDocTab('pass')">Паспорт</button>
+        <button id="tab-id" onclick="setDocTab('id')">ID-картка</button>
+      </div>
+
+      <div class="stack-8">
+        <div class="field has-ico"><label id="d-num-lbl">Серія і номер</label><input id="d-num" /><span class="help-ico">?</span><div class="err-msg"></div></div>
+        <div class="field"><label>Дата видачі</label><input id="d-issued" placeholder="ДД.ММ.РРРР" inputmode="numeric" /><div class="err-msg"></div></div>
+        <div class="field"><label>Ким виданий</label>
+          <textarea id="d-org" rows="2" style="padding-top:24px; padding-bottom:10px; resize:none;"></textarea>
+          <div class="err-msg"></div>
+        </div>
+      </div>
+
+      <div class="note">Дані шифровані. Передаємо тільки в МТСБУ, скан у нас не зберігається.</div>
+    </div>
+    <div class="cta-wrap">
+      <button class="cta" onclick="submitCO2()">Продовжити</button>
+    </div>
+  </section>
+
+  <!-- ============ Кінець скоупу ============ -->
+  <section class="screen" id="end">
+    <div class="topbar">
+      <button class="back" onclick="prev()">‹</button>
+      <div class="title">Оформлення поліса<span class="sub">Далі — крок 4 з 6</span></div>
+      <div class="help">?</div>
+      <button class="auth-btn">Авторизація</button>
+    </div>
+    <div class="progress">
+      <div class="dot done"></div>
+      <div class="dot done"></div>
+      <div class="dot done"></div>
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="body" style="text-align:center;">
+      <div class="success-check">✓</div>
+      <h1 class="screen-title">CO1–CO2 пройдено</h1>
+      <div class="subtitle" style="text-align:center;">Далі йдуть апсейли та оплата — як на проді.<br/>Вони поза скоупом цієї задачі (там своя логіка перерахунку вартості при додаванні апсейлів).</div>
+      <button class="cta cta-secondary" style="width:auto; padding:14px 24px; margin-top:10px;" onclick="reset()">↺ Почати спочатку</button>
+    </div>
+  </section>
+
+  <!-- overlay для date-picker -->
+  <div class="overlay" id="overlay">
+    <div class="sheet">
+      <div class="handle"></div>
+      <div id="overlay-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- control panel -->
+<div class="panel">
+  <h2>Hotline ОСЦПВ · Design 2.0</h2>
+  <div class="sub">Checkout CO1–CO2 · mobile 390×844</div>
+
+  <div class="group">
+    <h3>Навігація</h3>
+    <button onclick="go('co1')" id="btn-co1" class="current">1 · Авто + Страхувальник</button>
+    <button onclick="go('co2')" id="btn-co2">2 · Документ</button>
+    <button onclick="go('end')" id="btn-end">✓ · Кінець скоупу</button>
+  </div>
+
+  <div class="group">
+    <h3>Стани</h3>
+    <button onclick="statePrefilled()">✅ prefilled — реєстр відповів (default)</button>
+    <button onclick="stateEdge()">⚠️ edge-2026 — реєстр порожній</button>
+    <button onclick="stateConflict()">📅 conflict — чинний поліс до 21.07</button>
+    <button onclick="stateErrors()">❌ field-error — показати inline-помилки</button>
+  </div>
+
+  <div class="group">
+    <h3>Demo</h3>
+    <button onclick="fillDemo()">⚡ Заповнити все (Skoda Rapid)</button>
+    <button onclick="reset()">↺ Скинути</button>
+  </div>
+
+  <div class="kb">⌨️ ← / → клавіші для навігації</div>
+</div>
+
+<script>
+const ORDER = ['co1','co2','end'];
+let current = 'co1';
+let conflictMode = false;
+const EXISTING_POLICY_END = 21; // чинний поліс до 21.07.2026 (demo)
+
+/* ---------- навігація ---------- */
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.panel button[id^="btn-"]').forEach(b => b.classList.remove('current'));
+  const btn = document.getElementById('btn-' + id);
+  if (btn) btn.classList.add('current');
+  current = id;
+  document.getElementById(id).scrollTop = 0;
+}
+function next() {
+  const i = ORDER.indexOf(current);
+  if (i < ORDER.length - 1) go(ORDER[i + 1]);
+}
+function prev() {
+  const i = ORDER.indexOf(current);
+  if (i > 0) go(ORDER[i - 1]);
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') next();
+  if (e.key === 'ArrowLeft') prev();
+});
+
+
+const DEMO = {
+  plate: 'AA1234CE',
+  v: { brand: 'Skoda', model: 'Rapid', year: '2013', cc: '1598', vin: 'TMBAD2NH4EB004321', seats: '5', massFull: '1615', massEmpty: '1115' },
+  c: {
+    name: 'Петренко Олександр Іванович',
+    dob: '14.03.1991',
+    ipn: '3184756291',
+    email: 'test@example.com',
+    phone: '+380971234567',
+    city: 'м. Київ, Шевченківський р-н',
+    street: 'Хрещатик',
+    house: '12',
+    apt: ''
+  },
+  d: { num: 'АА 123456', issued: '15.03.2015', org: 'Шевченківським РВ ГУДМС України в м. Києві' }
+};
+
+const V_IDS = ['v-brand','v-model','v-year','v-cc','v-vin','v-seats','v-mass-full','v-mass-empty'];
+
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.value = val;
+  const f = el.closest('.field');
+  if (f) f.classList.toggle('filled', !!String(val).trim());
+}
+
+/* ---------- авто-блок: prefilled / edge-2026 ---------- */
+let vehicleCollapsed = true;
+
+function fillVehicleFromRegistry() {
+  setVal('plate', DEMO.plate);
+  setVal('v-brand', DEMO.v.brand);
+  setVal('v-model', DEMO.v.model);
+  setVal('v-year', DEMO.v.year);
+  setVal('v-cc', DEMO.v.cc);
+  setVal('v-vin', DEMO.v.vin);
+  setVal('v-seats', DEMO.v.seats);
+  setVal('v-mass-full', DEMO.v.massFull);
+  setVal('v-mass-empty', DEMO.v.massEmpty);
+  V_IDS.forEach(id => {
+    const f = document.getElementById(id).closest('.field');
+    f.classList.add('auto');
+    f.classList.remove('need','err','ok');
+  });
+  document.getElementById('brand-logo').textContent = 'Š';
+}
+
+function collapseVehicle() {
+  vehicleCollapsed = true;
+  document.getElementById('v-summary').style.display = '';
+  document.getElementById('vehicle-block').style.display = 'none';
+  const vin = document.getElementById('v-vin').value;
+  document.getElementById('v-sum-title').textContent =
+    (document.getElementById('v-brand').value || '—') + ' ' +
+    (document.getElementById('v-model').value || '') + ' · ' +
+    (document.getElementById('v-year').value || '');
+  document.getElementById('v-sum-sub').textContent =
+    (document.getElementById('plate').value || '—') +
+    ' · VIN ···' + (vin ? vin.slice(-4) : '—') +
+    ' · не для платних перевезень';
+}
+
+function expandVehicle() {
+  vehicleCollapsed = false;
+  document.getElementById('v-summary').style.display = 'none';
+  document.getElementById('vehicle-block').style.display = '';
+}
+
+/* ---------- стани з панелі ---------- */
+function statePrefilled() {
+  document.getElementById('reg-note').style.display = 'none';
+  fillVehicleFromRegistry();
+  collapseVehicle();
+  go('co1');
+  toast('Стан: реєстр відповів, авто-блок згорнуто');
+}
+
+function stateEdge() {
+  go('co1');
+  /* реєстр не відповів: блок розгорнутий, поля порожні й підсвічені */
+  setVal('plate', DEMO.plate); /* номер лишається — з лендінгу */
+  V_IDS.forEach(id => {
+    setVal(id, '');
+    const f = document.getElementById(id).closest('.field');
+    f.classList.remove('auto','err','ok');
+    f.classList.add('need');
+  });
+  document.getElementById('brand-logo').textContent = '—';
+  expandVehicle();
+  document.getElementById('reg-note').style.display = '';
+  toast('Стан: edge-2026 — реєстр порожній, ручний ввід');
+}
+
+function stateConflict() {
+  go('co1');
+  conflictMode = true;
+  setDateStart(17);
+  toast('Стан: конфлікт дат — показуємо warning, не блокуємо');
+}
+
+function stateErrors() {
+  go('co1');
+  setVal('c-name', 'Євгеній');
+  setVal('c-dob', '32.13.1990');
+  setVal('c-ipn', '123');
+  setVal('c-email', 'testexample.com');
+  setVal('c-phone', '097123');
+  ['c-name','c-dob','c-ipn','c-email','c-phone'].forEach(id => validateField(id));
+  const firstErr = document.querySelector('#co1 .field.err');
+  if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  toast('Стан: inline-помилки під полями');
+}
+
+/* ---------- дата + конфлікт ---------- */
+let startDay = 22;
+
+function setDateStart(d) {
+  startDay = d;
+  const dd = String(d).padStart(2, '0');
+  document.getElementById('date-start').textContent = `${dd}.07.2026`;
+  const warn = document.getElementById('date-warn');
+  warn.style.display = (conflictMode && d <= EXISTING_POLICY_END) ? '' : 'none';
+}
+
+function openDatePicker() {
+  const days = [...Array(31)].map((_, i) => {
+    const d = i + 1;
+    const active = d === startDay;
+    const conflicted = conflictMode && d <= EXISTING_POLICY_END;
+    return `<button onclick="pickDate(${d})" style="padding:10px 0; border-radius:8px; border:none;
+      background:${active ? '#1a1a1a' : (conflicted ? '#FBE2D0' : '#fff')};
+      color:${active ? '#fff' : '#1a1a1a'}; font-weight:700; cursor:pointer;">${d}</button>`;
+  }).join('');
+  showOverlay(`
+    <h3>Коли поліс починає діяти</h3>
+    <p>Липень 2026${conflictMode ? ' · помаранчеві дні перетинаються з чинним полісом' : ''}</p>
+    <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:14px; font-size:13px; text-align:center;">
+      <div class="muted">ПН</div><div class="muted">ВТ</div><div class="muted">СР</div><div class="muted">ЧТ</div><div class="muted">ПТ</div><div class="muted">СБ</div><div class="muted">НД</div>
+      ${days}
+    </div>
+    <button class="cta" onclick="hideOverlay()">Застосувати</button>
+  `);
+}
+function pickDate(d) {
+  setDateStart(d);
+  openDatePicker(); /* перемалювати активний день */
+}
+
+
+const VALIDATORS = {
+  'c-name':  v => v.trim().split(/\s+/).filter(Boolean).length >= 2 || 'Вкажіть прізвище, імʼя та по батькові',
+  'c-dob':   v => isValidDate(v) || 'Формат: ДД.ММ.РРРР',
+  'c-ipn':   v => /^\d{10}$/.test(v.trim()) || 'ІПН — рівно 10 цифр',
+  'c-email': v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()) || 'Перевірте email — схоже на одрук',
+  'c-phone': v => /^(\+?380|0)\d{9}$/.test(v.replace(/[\s\-()]/g, '')) || 'Формат: +380 XX XXX XX XX',
+  'c-city':   req('Вкажіть місто'),
+  'c-street': req('Вкажіть вулицю'),
+  'c-house':  req('Вкажіть будинок'),
+  'v-brand':  req('З реєстру не прийшло — заповніть'),
+  'v-model':  req('З реєстру не прийшло — заповніть'),
+  'v-year':   v => /^(19|20)\d{2}$/.test(v.trim()) || 'Рік — 4 цифри',
+  'v-vin':    v => v.trim().length >= 6 || 'Перевірте VIN',
+  'd-num':    req('Вкажіть серію і номер'),
+  'd-issued': v => isValidDate(v) || 'Формат: ДД.ММ.РРРР',
+  'd-org':    req('Вкажіть, ким виданий документ')
+};
+
+function req(msg) { return v => !!v.trim() || msg; }
+
+function isValidDate(v) {
+  const m = v.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+  if (!m) return false;
+  const d = +m[1], mo = +m[2], y = +m[3];
+  return d >= 1 && d <= 31 && mo >= 1 && mo <= 12 && y >= 1900 && y <= 2026;
+}
+
+function validateField(id) {
+  const el = document.getElementById(id);
+  const rule = VALIDATORS[id];
+  if (!el || !rule) return true;
+  const f = el.closest('.field');
+  const msgEl = f.querySelector('.err-msg');
+  const res = rule(el.value);
+  if (res === true) {
+    f.classList.remove('err');
+    if (el.value.trim()) { f.classList.remove('need'); f.classList.add('ok'); }
+    else f.classList.remove('ok');
+    if (msgEl) msgEl.textContent = '';
+    return true;
+  }
+  f.classList.add('err');
+  f.classList.remove('need','ok');
+  if (msgEl) msgEl.textContent = res;
+  return false;
+}
+
+/* debounce 300 мс на введення */
+const debounceTimers = {};
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (!el.matches('.field input, .field textarea')) return;
+  const f = el.closest('.field');
+  f.classList.toggle('filled', !!el.value.trim());
+  if (!el.value.trim()) f.classList.remove('ok');
+  const id = el.id;
+  if (!VALIDATORS[id]) return;
+  clearTimeout(debounceTimers[id]);
+  debounceTimers[id] = setTimeout(() => {
+    /* порожнє поле не фарбуємо в error під час набору — тільки після сабміту */
+    if (el.value.trim() !== '' || f.classList.contains('err')) validateField(id);
+  }, 300);
+});
+
+/* ---------- сабміти ---------- */
+function submitCO1() {
+  const vehicleIds = vehicleCollapsed ? [] : ['v-brand','v-model','v-year','v-vin'];
+  const clientIds = ['c-name','c-dob','c-ipn','c-email','c-phone','c-city','c-street','c-house'];
+  const bad = [...vehicleIds, ...clientIds].filter(id => !validateField(id));
+  if (bad.length) {
+    const firstErr = document.querySelector('#co1 .field.err');
+    if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    toast(`Перевірте поля: ${bad.length} з помилками`);
+    return;
+  }
+  go('co2');
+}
+
+function submitCO2() {
+  const bad = ['d-num','d-issued','d-org'].filter(id => !validateField(id));
+  if (bad.length) {
+    const firstErr = document.querySelector('#co2 .field.err');
+    if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    toast('Заповніть дані документа');
+    return;
+  }
+  go('end');
+}
+
+
+function setDocTab(t) {
+  document.querySelectorAll('#co2 .tabs button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + t).classList.add('active');
+  const lbl = document.getElementById('d-num-lbl');
+  lbl.textContent = t === 'dl' ? 'Серія і номер посвідчення' : 'Серія і номер';
+}
+
+
+function toggleIpnTip() {
+  const tip = document.getElementById('ipn-tip');
+  tip.style.display = tip.style.display === 'block' ? 'none' : 'block';
+}
+
+/* ---------- demo fill / reset ---------- */
+function fillDemo() {
+  fillVehicleFromRegistry();
+  collapseVehicle();
+  document.getElementById('reg-note').style.display = 'none';
+  setVal('c-name', DEMO.c.name);
+  setVal('c-dob', DEMO.c.dob);
+  setVal('c-ipn', DEMO.c.ipn);
+  setVal('c-email', DEMO.c.email);
+  setVal('c-phone', DEMO.c.phone);
+  setVal('c-city', DEMO.c.city);
+  setVal('c-street', DEMO.c.street);
+  setVal('c-house', DEMO.c.house);
+  setVal('c-apt', DEMO.c.apt);
+  setVal('d-num', DEMO.d.num);
+  setVal('d-issued', DEMO.d.issued);
+  setVal('d-org', DEMO.d.org);
+  document.querySelectorAll('.field.err').forEach(f => {
+    f.classList.remove('err');
+    const m = f.querySelector('.err-msg'); if (m) m.textContent = '';
+  });
+  toast('Заповнили демо-даними (вигадана особа) — Skoda Rapid 2013');
+}
+
+function reset() {
+  document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input:not([type]), textarea').forEach(i => { i.value = ''; });
+  document.querySelectorAll('.field').forEach(f => {
+    f.classList.remove('filled','auto','err','need','ok');
+    const m = f.querySelector('.err-msg'); if (m) m.textContent = '';
+  });
+  conflictMode = false;
+  setDateStart(22);
+  document.getElementById('reg-note').style.display = 'none';
+  document.getElementById('ipn-tip').style.display = 'none';
+  const priv = document.getElementById('v-private'); if (priv) priv.checked = true;
+  statePrefilled();
+  setDocTab('pass');
+  go('co1');
+}
+
+/* ---------- overlay + toast ---------- */
+function showOverlay(html) {
+  document.getElementById('overlay-content').innerHTML = html;
+  document.getElementById('overlay').classList.add('active');
+}
+function hideOverlay() {
+  document.getElementById('overlay').classList.remove('active');
+}
+function toast(msg) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:absolute; bottom: 30px; left: 20px; right: 20px; background: rgba(20,20,20,0.95); color: #fff; padding: 12px 14px; border-radius: 12px; font-size: 13px; z-index: 300; animation: slideUp 0.25s;';
+  document.querySelector('.device').appendChild(t);
+  setTimeout(() => t.remove(), 2400);
+}
+
+/* ---------- init: default = prefilled ---------- */
+fillVehicleFromRegistry();
+collapseVehicle();
+go('co1');
+</script>
+</body>
+</html>
