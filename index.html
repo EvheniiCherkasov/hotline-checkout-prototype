@@ -151,6 +151,21 @@
     font-size: 11px; color: var(--muted);
   }
 
+  /* хінт-підтвердження: дані вже заповнені з реєстру, юзер лише перевіряє */
+  .confirm-hint {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px;
+    background: #EEF4FC;
+    color: var(--reg-blue);
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0 0 14px;
+    text-align: center;
+  }
+
   /* form */
   .field { position: relative; margin-bottom: 12px; }
   .field label {
@@ -270,37 +285,6 @@
     font-size: 10px;
   }
 
-  
-  .v-summary {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 14px;
-    margin-bottom: 12px;
-  }
-  .v-summary .row-top { display: flex; align-items: center; gap: 12px; }
-  .v-summary .v-title { font-weight: 800; font-size: 15px; }
-  .v-summary .v-sub { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
-  .v-summary .v-edit {
-    background: var(--cream-dark);
-    border: none;
-    padding: 7px 12px;
-    border-radius: 999px;
-    font-size: 12px; font-weight: 600;
-    color: var(--text);
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-  .v-summary .v-edit:active { background: var(--border); }
-  .v-summary .reg-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: #EEF4FC; color: var(--reg-blue);
-    border-radius: 8px;
-    padding: 3px 8px;
-    font-size: 10px; font-weight: 700;
-    margin-top: 8px;
-  }
-
   /* warning box */
   .warn-box {
     background: var(--warn-bg);
@@ -400,32 +384,6 @@
     color: var(--success);
   }
 
-  /* overlay + sheet (date-picker) */
-  .overlay {
-    position: absolute; inset: 0;
-    background: rgba(10,10,10,0.55);
-    display: none;
-    align-items: flex-end;
-    z-index: 200;
-    border-radius: 44px;
-  }
-  .overlay.active { display: flex; }
-  .sheet {
-    background: #fff;
-    width: 100%;
-    border-radius: 24px 24px 0 0;
-    padding: 24px 20px 32px;
-    animation: slideUp 0.25s ease-out;
-  }
-  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-  .sheet .handle {
-    width: 48px; height: 5px; border-radius: 3px;
-    background: var(--border);
-    margin: 0 auto 16px;
-  }
-  .sheet h3 { margin: 0 0 6px; font-size: 18px; font-weight: 700; }
-  .sheet p { margin: 0 0 18px; color: var(--muted); font-size: 14px; }
-
   /* side panel */
   .panel {
     width: 320px;
@@ -484,7 +442,6 @@
       <button class="auth-btn" onclick="toast('Авторизація — поза скоупом прототипу')">Авторизація</button>
     </div>
     <div class="progress">
-      <div class="dot done"></div>
       <div class="dot active"></div>
       <div class="dot"></div>
       <div class="dot"></div>
@@ -494,18 +451,8 @@
     <div class="body">
       <h1 class="screen-title">Дані про транспортний засіб</h1>
 
-      <!-- згорнута summary-card: дані з реєстру -->
-      <div class="v-summary" id="v-summary">
-        <div class="row-top">
-          <div class="brand-logo" id="brand-logo-s">Š</div>
-          <div style="flex:1; min-width:0;">
-            <div class="v-title" id="v-sum-title">Skoda Rapid · 2013</div>
-            <div class="v-sub" id="v-sum-sub">AA1234CE · VIN ···4321 · не для платних перевезень</div>
-          </div>
-          <button class="v-edit" onclick="expandVehicle()">Змінити</button>
-        </div>
-        <div class="reg-badge">⚡ 8 полів з реєстру — перевірте й редагуйте за потреби</div>
-      </div>
+      <!-- підтвердження: дані вже заповнені за номером з лендінга -->
+      <div class="confirm-hint" id="confirm-hint">⚡ Заповнили все за вашим номером — перевірте дані й редагуйте за потреби</div>
 
       <!-- нотатка, коли реєстр не відповів (edge-2026) -->
       <div class="warn-box" id="reg-note" style="display:none;">
@@ -513,7 +460,7 @@
       </div>
 
       
-      <div id="vehicle-block" style="display:none;">
+      <div id="vehicle-block">
         <div class="plate-wrap">
           <div class="plate">
             <div class="ua">UA</div>
@@ -587,7 +534,6 @@
     </div>
     <div class="progress">
       <div class="dot done"></div>
-      <div class="dot done"></div>
       <div class="dot active"></div>
       <div class="dot"></div>
       <div class="dot"></div>
@@ -623,12 +569,11 @@
   <section class="screen" id="end">
     <div class="topbar">
       <button class="back" onclick="prev()">‹</button>
-      <div class="title">Оформлення поліса<span class="sub">Далі — крок 4 з 6</span></div>
+      <div class="title">Оформлення поліса<span class="sub">Далі — крок 3 з 5</span></div>
       <div class="help">?</div>
       <button class="auth-btn">Авторизація</button>
     </div>
     <div class="progress">
-      <div class="dot done"></div>
       <div class="dot done"></div>
       <div class="dot done"></div>
       <div class="dot active"></div>
@@ -642,14 +587,6 @@
       <button class="cta cta-secondary" style="width:auto; padding:14px 24px; margin-top:10px;" onclick="reset()">↺ Почати спочатку</button>
     </div>
   </section>
-
-  <!-- overlay для date-picker -->
-  <div class="overlay" id="overlay">
-    <div class="sheet">
-      <div class="handle"></div>
-      <div id="overlay-content"></div>
-    </div>
-  </div>
 </div>
 
 <!-- control panel -->
@@ -659,7 +596,7 @@
 
   <div class="group">
     <h3>Навігація</h3>
-    <button onclick="go('co1')" id="btn-co1" class="current">1 · Авто + Страхувальник</button>
+    <button onclick="go('co1')" id="btn-co1" class="current">1 · Авто (підтвердження) + Страхувальник</button>
     <button onclick="go('co2')" id="btn-co2">2 · Документ</button>
     <button onclick="go('end')" id="btn-end">✓ · Кінець скоупу</button>
   </div>
@@ -707,7 +644,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') prev();
 });
 
-
+/* ---------- demo-дані ---------- */
 const DEMO = {
   plate: 'AA1234CE',
   v: { brand: 'Skoda', model: 'Rapid', year: '2013', cc: '1598', vin: 'TMBAD2NH4EB004321', seats: '5', massFull: '1615', massEmpty: '1115' },
@@ -735,9 +672,7 @@ function setVal(id, val) {
   if (f) f.classList.toggle('filled', !!String(val).trim());
 }
 
-/* ---------- авто-блок: prefilled / edge-2026 ---------- */
-let vehicleCollapsed = true;
-
+/* ---------- авто-блок: prefilled (підтвердження) / edge-2026 ---------- */
 function fillVehicleFromRegistry() {
   setVal('plate', DEMO.plate);
   setVal('v-brand', DEMO.v.brand);
@@ -756,40 +691,19 @@ function fillVehicleFromRegistry() {
   document.getElementById('brand-logo').textContent = 'Š';
 }
 
-function collapseVehicle() {
-  vehicleCollapsed = true;
-  document.getElementById('v-summary').style.display = '';
-  document.getElementById('vehicle-block').style.display = 'none';
-  const vin = document.getElementById('v-vin').value;
-  document.getElementById('v-sum-title').textContent =
-    (document.getElementById('v-brand').value || '—') + ' ' +
-    (document.getElementById('v-model').value || '') + ' · ' +
-    (document.getElementById('v-year').value || '');
-  document.getElementById('v-sum-sub').textContent =
-    (document.getElementById('plate').value || '—') +
-    ' · VIN ···' + (vin ? vin.slice(-4) : '—') +
-    ' · не для платних перевезень';
-}
-
-function expandVehicle() {
-  vehicleCollapsed = false;
-  document.getElementById('v-summary').style.display = 'none';
-  document.getElementById('vehicle-block').style.display = '';
-}
-
 /* ---------- стани з панелі ---------- */
 function statePrefilled() {
   document.getElementById('reg-note').style.display = 'none';
+  document.getElementById('confirm-hint').style.display = '';
   fillVehicleFromRegistry();
-  collapseVehicle();
   go('co1');
-  toast('Стан: реєстр відповів, авто-блок згорнуто');
+  toast('Стан: реєстр відповів — дані авто на підтвердження');
 }
 
 function stateEdge() {
   go('co1');
-  /* реєстр не відповів: блок розгорнутий, поля порожні й підсвічені */
-  setVal('plate', DEMO.plate); /* номер лишається — з лендінгу */
+  /* реєстр не відповів: поля порожні й підсвічені, хінт підтвердження ховаємо */
+  setVal('plate', DEMO.plate); /* номер лишається — з лендінга */
   V_IDS.forEach(id => {
     setVal(id, '');
     const f = document.getElementById(id).closest('.field');
@@ -797,11 +711,10 @@ function stateEdge() {
     f.classList.add('need');
   });
   document.getElementById('brand-logo').textContent = '—';
-  expandVehicle();
+  document.getElementById('confirm-hint').style.display = 'none';
   document.getElementById('reg-note').style.display = '';
   toast('Стан: edge-2026 — реєстр порожній, ручний ввід');
 }
-
 
 function stateErrors() {
   go('co1');
@@ -883,7 +796,7 @@ document.addEventListener('input', e => {
 
 /* ---------- сабміти ---------- */
 function submitCO1() {
-  const vehicleIds = vehicleCollapsed ? [] : ['v-brand','v-model','v-year','v-vin'];
+  const vehicleIds = ['v-brand','v-model','v-year','v-vin'];
   const clientIds = ['c-name','c-dob','c-ipn','c-email','c-phone','c-city','c-street','c-house'];
   const bad = [...vehicleIds, ...clientIds].filter(id => !validateField(id));
   if (bad.length) {
@@ -923,8 +836,8 @@ function toggleIpnTip() {
 /* ---------- demo fill / reset ---------- */
 function fillDemo() {
   fillVehicleFromRegistry();
-  collapseVehicle();
   document.getElementById('reg-note').style.display = 'none';
+  document.getElementById('confirm-hint').style.display = '';
   setVal('c-name', DEMO.c.name);
   setVal('c-dob', DEMO.c.dob);
   setVal('c-ipn', DEMO.c.ipn);
@@ -958,25 +871,20 @@ function reset() {
   go('co1');
 }
 
-/* ---------- overlay + toast ---------- */
-function showOverlay(html) {
-  document.getElementById('overlay-content').innerHTML = html;
-  document.getElementById('overlay').classList.add('active');
-}
-function hideOverlay() {
-  document.getElementById('overlay').classList.remove('active');
-}
+/* ---------- toast ---------- */
 function toast(msg) {
   const t = document.createElement('div');
   t.textContent = msg;
-  t.style.cssText = 'position:absolute; bottom: 30px; left: 20px; right: 20px; background: rgba(20,20,20,0.95); color: #fff; padding: 12px 14px; border-radius: 12px; font-size: 13px; z-index: 300; animation: slideUp 0.25s;';
+  t.style.cssText = 'position:absolute; bottom: 30px; left: 20px; right: 20px; background: rgba(20,20,20,0.95); color: #fff; padding: 12px 14px; border-radius: 12px; font-size: 13px; z-index: 300; animation: toastIn 0.25s;';
   document.querySelector('.device').appendChild(t);
   setTimeout(() => t.remove(), 2400);
 }
+const styleEl = document.createElement('style');
+styleEl.textContent = '@keyframes toastIn { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }';
+document.head.appendChild(styleEl);
 
-/* ---------- init: default = prefilled ---------- */
+/* ---------- init: default = prefilled (підтвердження) ---------- */
 fillVehicleFromRegistry();
-collapseVehicle();
 go('co1');
 </script>
 </body>
