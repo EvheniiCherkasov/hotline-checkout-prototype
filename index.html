@@ -213,6 +213,32 @@
     cursor: pointer;
   }
   
+  /* автозаповнення через ID.GOV.UA — кнопка під ПІБ при фокусі (як на проді) */
+  .idgov-drop {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: -6px; right: -34px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.16);
+    padding: 12px;
+    z-index: 60;
+  }
+  .idgov-btn {
+    width: 100%;
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 15px 12px;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .idgov-btn:hover { background: #000; }
+
   .field .dd-chev {
     position: absolute; right: 14px; top: 50%;
     transform: translateY(-50%);
@@ -518,7 +544,9 @@
 
       <div class="group-lbl">Особисті дані</div>
       <div class="stack-8">
-        <div class="field"><label>ПІБ</label><input id="c-name" autocomplete="name" /><div class="err-msg"></div></div>
+        <div class="field"><label>ПІБ</label><input id="c-name" autocomplete="name" /><div class="err-msg"></div>
+          <div class="idgov-drop" id="idgov-drop"><button class="idgov-btn" onmousedown="fillFromIdGov()">Заповнити дані через ID.GOV.UA</button></div>
+        </div>
         <div class="field"><label>Дата народження</label><input id="c-dob" placeholder="ДД.ММ.РРРР" inputmode="numeric" autocomplete="bday" /><div class="err-msg"></div></div>
         <div class="field has-ico"><label>ІПН</label><input id="c-ipn" inputmode="numeric" maxlength="10" /><span class="help-ico" onclick="toggleIpnTip()">?</span><div class="err-msg"></div></div>
       </div>
@@ -820,6 +848,29 @@ document.addEventListener('input', e => {
     if (el.value.trim() !== '' || f.classList.contains('err')) validateField(id);
   }, 300);
 });
+
+/* ---------- автозаповнення через ID.GOV.UA (прод-фіча): кнопка під ПІБ при фокусі ---------- */
+function fillFromIdGov() {
+  setVal('c-name', DEMO.c.name);
+  setVal('c-dob', DEMO.c.dob);
+  setVal('c-ipn', DEMO.c.ipn);
+  setVal('c-email', DEMO.c.email);
+  setVal('c-phone', DEMO.c.phone);
+  setVal('c-city', DEMO.c.city);
+  setVal('c-street', DEMO.c.street);
+  setVal('c-house', DEMO.c.house);
+  ['c-name','c-dob','c-ipn','c-email','c-phone','c-city','c-street','c-house'].forEach(id => validateField(id));
+  const drop = document.getElementById('idgov-drop');
+  if (drop) drop.style.display = 'none';
+  toast('Дані підтягнуто через ID.GOV.UA (демо)');
+}
+(function initIdGov() {
+  const nameInput = document.getElementById('c-name');
+  const drop = document.getElementById('idgov-drop');
+  if (!nameInput || !drop) return;
+  nameInput.addEventListener('focus', () => { drop.style.display = 'block'; });
+  nameInput.addEventListener('blur', () => setTimeout(() => { drop.style.display = 'none'; }, 200));
+})();
 
 /* ---------- сабміти ---------- */
 function submitCO1() {
