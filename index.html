@@ -166,6 +166,17 @@
     text-align: center;
   }
 
+  /* ціновий рядок: повна сума з апсейлами на кожному кроці (фікс кейса з треда QA) */
+  .price-line {
+    display: flex; align-items: baseline; justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 0 20px 12px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .price-line b { color: var(--text); font-weight: 800; font-size: 15px; }
+
   /* form */
   .field { position: relative; margin-bottom: 12px; }
   .field label {
@@ -475,6 +486,7 @@
       <div class="dot"></div>
       <div class="dot"></div>
     </div>
+    <div class="price-line" data-price></div>
     <div class="body">
       <h1 class="screen-title">Дані про транспортний засіб</h1>
 
@@ -535,6 +547,7 @@
       <div class="dot"></div>
       <div class="dot"></div>
     </div>
+    <div class="price-line" data-price></div>
     <div class="body">
       
       <h1 class="screen-title">Дані страхувальника (покупця)</h1>
@@ -592,6 +605,7 @@
       <div class="dot"></div>
       <div class="dot"></div>
     </div>
+    <div class="price-line" data-price></div>
     <div class="body">
       <h1 class="screen-title">Заповніть один із документів</h1>
       <div class="ua-note"><span class="flag"></span> Поля заповнюються українською <span class="q">?</span></div>
@@ -634,6 +648,7 @@
       <div class="dot"></div>
       <div class="dot"></div>
     </div>
+    <div class="price-line" data-price></div>
     <div class="body" style="text-align:center;">
       <div class="success-check">✓</div>
       <h1 class="screen-title">CO1–CO2 пройдено</h1>
@@ -666,6 +681,7 @@
   <div class="group">
     <h3>Demo</h3>
     <button onclick="fillDemo()">⚡ Заповнити все (Skoda Rapid)</button>
+    <button onclick="toggleUpsellDCV()" id="btn-upsell-toggle">➕ Додати апсейл ДЦВ (+660 ₴)</button>
     <button onclick="reset()">↺ Скинути</button>
   </div>
 
@@ -872,6 +888,26 @@ function fillFromIdGov() {
   nameInput.addEventListener('blur', () => setTimeout(() => { drop.style.display = 'none'; }, 200));
 })();
 
+/* ---------- ціна: завжди повна сума (поліс + апсейли), перерахунок миттєво ---------- */
+const BASE_POLICY = 911;
+const DCV_PRICE = 660;
+let upsellDCV = false;
+function renderPrice() {
+  const total = BASE_POLICY + (upsellDCV ? DCV_PRICE : 0);
+  document.querySelectorAll('[data-price]').forEach(el => {
+    el.innerHTML = upsellDCV
+      ? `До сплати: <b>${total} ₴</b><span>· ОСЦПВ ${BASE_POLICY} ₴ + ДЦВ ${DCV_PRICE} ₴</span>`
+      : `До сплати: <b>${total} ₴</b><span>· поліс ОСЦПВ</span>`;
+  });
+  const btn = document.getElementById('btn-upsell-toggle');
+  if (btn) btn.textContent = upsellDCV ? '➖ Прибрати апсейл ДЦВ (−660 ₴)' : '➕ Додати апсейл ДЦВ (+660 ₴)';
+}
+function toggleUpsellDCV() {
+  upsellDCV = !upsellDCV;
+  renderPrice();
+  toast(upsellDCV ? 'ДЦВ додано — сума оновилася на всіх кроках' : 'ДЦВ прибрано — сума оновилася на всіх кроках');
+}
+
 /* ---------- сабміти ---------- */
 function submitCO1() {
   const bad = ['v-brand','v-model','v-year','v-vin'].filter(id => !validateField(id));
@@ -953,6 +989,8 @@ function reset() {
   document.getElementById('reg-note').style.display = 'none';
   document.getElementById('ipn-tip').style.display = 'none';
   const priv = document.getElementById('v-private'); if (priv) priv.checked = true;
+  upsellDCV = false;
+  renderPrice();
   statePrefilled();
   setDocTab('pass');
   go('co1');
@@ -972,6 +1010,7 @@ document.head.appendChild(styleEl);
 
 /* ---------- init: default = prefilled (підтвердження) ---------- */
 fillVehicleFromRegistry();
+renderPrice();
 go('co1');
 </script>
 </body>
