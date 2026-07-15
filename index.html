@@ -447,6 +447,7 @@
       <div class="dot"></div>
       <div class="dot"></div>
       <div class="dot"></div>
+      <div class="dot"></div>
     </div>
     <div class="body">
       <h1 class="screen-title">Дані про транспортний засіб</h1>
@@ -486,8 +487,31 @@
         </div>
       </div>
 
+    </div>
+    <div class="cta-wrap">
+      <button class="cta" onclick="submitCO1()">Продовжити</button>
+    </div>
+  </section>
+
+  
+  <section class="screen" id="co2">
+    <div class="topbar">
+      <button class="back" onclick="prev()">‹</button>
+      <div class="title">Оформлення поліса<span class="sub">Умови та ціна поліса</span></div>
+      <div class="help">?</div>
+      <button class="auth-btn" onclick="toast('Авторизація — поза скоупом прототипу')">Авторизація</button>
+    </div>
+    <div class="progress">
+      <div class="dot done"></div>
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="body">
       
-      <h2 class="section-title">Дані страхувальника (покупця)</h2>
+      <h1 class="screen-title">Дані страхувальника (покупця)</h1>
       <div class="ua-note"><span class="flag"></span> Поля заповнюються українською <span class="q">?</span></div>
 
       
@@ -520,12 +544,12 @@
       </div>
     </div>
     <div class="cta-wrap">
-      <button class="cta" onclick="submitCO1()">Продовжити</button>
+      <button class="cta" onclick="submitCO2()">Продовжити</button>
     </div>
   </section>
 
-  <!-- ============ CO2 — ДОКУМЕНТ ============ -->
-  <section class="screen" id="co2">
+  <!-- ============ CO3 — ДОКУМЕНТ ============ -->
+  <section class="screen" id="co3">
     <div class="topbar">
       <button class="back" onclick="prev()">‹</button>
       <div class="title">Оформлення поліса<span class="sub">Умови та ціна поліса</span></div>
@@ -533,6 +557,7 @@
       <button class="auth-btn" onclick="toast('Авторизація — поза скоупом прототипу')">Авторизація</button>
     </div>
     <div class="progress">
+      <div class="dot done"></div>
       <div class="dot done"></div>
       <div class="dot active"></div>
       <div class="dot"></div>
@@ -561,7 +586,7 @@
       <div class="note">Дані шифровані. Передаємо тільки в МТСБУ, скан у нас не зберігається.</div>
     </div>
     <div class="cta-wrap">
-      <button class="cta" onclick="submitCO2()">Продовжити</button>
+      <button class="cta" onclick="submitCO3()">Продовжити</button>
     </div>
   </section>
 
@@ -569,11 +594,12 @@
   <section class="screen" id="end">
     <div class="topbar">
       <button class="back" onclick="prev()">‹</button>
-      <div class="title">Оформлення поліса<span class="sub">Далі — крок 3 з 5</span></div>
+      <div class="title">Оформлення поліса<span class="sub">Далі — крок 4 з 6</span></div>
       <div class="help">?</div>
       <button class="auth-btn">Авторизація</button>
     </div>
     <div class="progress">
+      <div class="dot done"></div>
       <div class="dot done"></div>
       <div class="dot done"></div>
       <div class="dot active"></div>
@@ -592,12 +618,13 @@
 <!-- control panel -->
 <div class="panel">
   <h2>Hotline ОСЦПВ · Design 2.0</h2>
-  <div class="sub">Checkout CO1–CO2 · mobile 390×844</div>
+  <div class="sub">Checkout CO1–CO3 · mobile 390×844</div>
 
   <div class="group">
     <h3>Навігація</h3>
-    <button onclick="go('co1')" id="btn-co1" class="current">1 · Авто (підтвердження) + Страхувальник</button>
-    <button onclick="go('co2')" id="btn-co2">2 · Документ</button>
+    <button onclick="go('co1')" id="btn-co1" class="current">1 · Авто (підтвердження)</button>
+    <button onclick="go('co2')" id="btn-co2">2 · Страхувальник</button>
+    <button onclick="go('co3')" id="btn-co3">3 · Документ</button>
     <button onclick="go('end')" id="btn-end">✓ · Кінець скоупу</button>
   </div>
 
@@ -618,7 +645,7 @@
 </div>
 
 <script>
-const ORDER = ['co1','co2','end'];
+const ORDER = ['co1','co2','co3','end'];
 let current = 'co1';
 
 /* ---------- навігація ---------- */
@@ -717,14 +744,14 @@ function stateEdge() {
 }
 
 function stateErrors() {
-  go('co1');
+  go('co2');
   setVal('c-name', 'Євгеній');
   setVal('c-dob', '32.13.1990');
   setVal('c-ipn', '123');
   setVal('c-email', 'testexample.com');
   setVal('c-phone', '097123');
   ['c-name','c-dob','c-ipn','c-email','c-phone'].forEach(id => validateField(id));
-  const firstErr = document.querySelector('#co1 .field.err');
+  const firstErr = document.querySelector('#co2 .field.err');
   if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
   toast('Стан: inline-помилки під полями');
 }
@@ -796,22 +823,31 @@ document.addEventListener('input', e => {
 
 /* ---------- сабміти ---------- */
 function submitCO1() {
-  const vehicleIds = ['v-brand','v-model','v-year','v-vin'];
-  const clientIds = ['c-name','c-dob','c-ipn','c-email','c-phone','c-city','c-street','c-house'];
-  const bad = [...vehicleIds, ...clientIds].filter(id => !validateField(id));
+  const bad = ['v-brand','v-model','v-year','v-vin'].filter(id => !validateField(id));
   if (bad.length) {
     const firstErr = document.querySelector('#co1 .field.err');
     if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    toast(`Перевірте поля: ${bad.length} з помилками`);
+    toast(`Перевірте дані авто: ${bad.length} з помилками`);
     return;
   }
   go('co2');
 }
 
 function submitCO2() {
-  const bad = ['d-num','d-issued','d-org'].filter(id => !validateField(id));
+  const bad = ['c-name','c-dob','c-ipn','c-email','c-phone','c-city','c-street','c-house'].filter(id => !validateField(id));
   if (bad.length) {
     const firstErr = document.querySelector('#co2 .field.err');
+    if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    toast(`Перевірте поля: ${bad.length} з помилками`);
+    return;
+  }
+  go('co3');
+}
+
+function submitCO3() {
+  const bad = ['d-num','d-issued','d-org'].filter(id => !validateField(id));
+  if (bad.length) {
+    const firstErr = document.querySelector('#co3 .field.err');
     if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
     toast('Заповніть дані документа');
     return;
@@ -821,7 +857,7 @@ function submitCO2() {
 
 
 function setDocTab(t) {
-  document.querySelectorAll('#co2 .tabs button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#co3 .tabs button').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + t).classList.add('active');
   const lbl = document.getElementById('d-num-lbl');
   lbl.textContent = t === 'dl' ? 'Серія і номер посвідчення' : 'Серія і номер';
